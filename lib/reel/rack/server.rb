@@ -23,11 +23,8 @@ module Reel
    
       def on_connection(connection)
         connection.each_request do |request|
-          if request.websocket?
-            request.respond :bad_request, "WebSockets not supported"
-          else
-            route_request request
-          end
+          continue = route_request connection, request
+          return if !continue
         end
       end
    
@@ -43,7 +40,22 @@ module Reel
 
         normalize_env(options)
 
+        hijacked = false
+        
+        if request.websocket?
+          options['reel.websocket?'] = true
+          options['rack.hijack?'] = true
+          options['rack.hijack'] = lambda do
+            hijacked = true
+            options['rack.hijack.io'] = request.websocket
+            connection.detach
+            request.websocket
+          end
+        end
+
         status, headers, body = app.call ::Rack::MockRequest.env_for(request.url, options)
+
+        return false if hijacked
 
         if body.respond_to? :each
           # If Content-Length was specified we can send the response all at once
@@ -63,6 +75,7 @@ module Reel
         end
 
         body.close if body.respond_to? :close
+        true
       end
 
       # Those headers must not start with 'HTTP_'.
