@@ -31,7 +31,7 @@ module Reel
       # Compile the regex once
       CONTENT_LENGTH_HEADER = %r{^content-length$}i
 
-      def route_request(request)
+      def route_request(connection, request)
         options = {
           :method       => request.method,
           :input        => request.body.to_s,
