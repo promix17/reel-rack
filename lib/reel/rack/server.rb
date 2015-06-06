@@ -56,6 +56,7 @@ module Reel
 
         status, headers, body = app.call ::Rack::MockRequest.env_for(request.url, options)
 
+        info "Connection was hijacked: #{hijacked}"
         return false if hijacked
 
         if body.respond_to? :each
