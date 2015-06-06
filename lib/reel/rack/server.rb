@@ -17,14 +17,14 @@ module Reel
         info  "A Reel good HTTP server! (Codename \"#{::Reel::CODENAME}\")"
         info "Listening on http://#{options[:Host]}:#{options[:Port]}"
 
-        super(options[:Host], options[:Port], &method(:on_connection))
+        super(options[:Host], options[:Port], options, &method(:on_connection))
         @app = app
       end
    
       def on_connection(connection)
         connection.each_request do |request|
           continue = route_request connection, request
-          return if !continue
+          break if !continue
         end
       end
    
