@@ -49,6 +49,7 @@ module Reel
             hijacked = true
             options['rack.hijack.io'] = request.websocket
             connection.detach
+            info "Negotiated websocket and detached connection."
             request.websocket
           end
         end
